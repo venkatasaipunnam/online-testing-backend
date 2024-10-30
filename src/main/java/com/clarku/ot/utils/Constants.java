@@ -66,5 +66,15 @@ public class Constants {
 	public static final String TEMP_PASS_SUBJECT = "Temporary Credentials";
 
 	public static final String TEMP_PASS_SUCCESS_TEMPLATE = "tempPassSuccess";
+
+	public static final String COMPLETED = "COMPLETED";
+
+	public static final String CREATED = "CREATED";
+
+	public static final String ACTIVE = "ACTIVE";
+
+	public static final String INACTIVE = "INACTIVE";
+
+	public static final String CLOSED = "CLOSED";
 	
 }

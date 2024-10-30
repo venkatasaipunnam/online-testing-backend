@@ -69,7 +69,7 @@ public class UserServiceImpl implements IUserService {
 		UserProfileVO loginDetails = userRepo.retrieveUserLoginDetails(userId);
 		if (loginDetails.getTempPassword() != null && !StringUtils.isBlank(loginDetails.getTempPassword())) {
 			if (!secure.getEncrypted(passVO.getCurrentPassword()).equals(loginDetails.getTempPassword())) {
-				throw new GlobalException("Wrong Current Password", HttpStatus.BAD_REQUEST);
+				throw new GlobalException("Wrong Temporary Password", HttpStatus.BAD_REQUEST);
 			}
 		}else {
 			if (!secure.getEncrypted(passVO.getCurrentPassword()).equals(loginDetails.getPassword())) {

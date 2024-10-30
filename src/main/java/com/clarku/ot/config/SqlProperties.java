@@ -21,6 +21,7 @@ public class SqlProperties {
 	public static Map<String, String> login;
 	public static Map<String, String> session;
 	public static Map<String, String> admin;
+	public static Map<String, String> exam;
 
 	public void setUser(Map<String, String> user) {
 		SqlProperties.user = user;
@@ -36,6 +37,10 @@ public class SqlProperties {
 
 	public void setAdmin(Map<String, String> admin) {
 		SqlProperties.admin = admin;
+	}
+
+	public void setExam(Map<String, String> exam) {
+		SqlProperties.exam = exam;
 	}
 	
 }

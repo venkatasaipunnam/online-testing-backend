@@ -59,7 +59,10 @@ public class LoginController {
 	public ResponseEntity<UserVO> signIn(@Validated(LoginValidation.class) @RequestBody LoginVO loginDetails) throws GlobalException, LoginException {
 		UserVO userDetails = loginService.signIn(loginDetails);
 		loginService.updateLastLogin(userDetails.getUserId());
-		SessionVO userSession = session.createSession(userDetails.getUserId());
+		SessionVO userSession = null;
+		if (Boolean.TRUE.equals(session.createSession(userDetails.getUserId()))) {
+			userSession = session.getSession(userDetails.getUserId());
+		}
 		userDetails.setSession(userSession);
 		return new ResponseEntity<>(userDetails, HttpStatus.OK);
 	}
