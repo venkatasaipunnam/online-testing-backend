@@ -5,7 +5,7 @@ import com.clarku.ot.vo.SessionVO;
 
 public interface ISessionService {
 
-	SessionVO createSession(Integer userId) throws GlobalException;
+	Boolean createSession(Integer userId) throws GlobalException;
 
 	SessionVO getSession(Integer userId) throws GlobalException;
 

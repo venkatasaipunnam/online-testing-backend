@@ -21,16 +21,17 @@ public class SessionServiceImpl implements ISessionService {
 	ISessionRepo sessionRepo;
 
 	@Override
-	public SessionVO createSession(Integer userId) throws GlobalException {
-		if (Boolean.TRUE.equals(isSessionExists(userId))) {
-			log.error("SessionServiceImpl :: createSession(): Session already exists.");
-			throw new GlobalException(Constants.SESSION_ALREADY_EXISTS_EXP, HttpStatus.UNAUTHORIZED);
-		}
-		if (Boolean.FALSE.equals(sessionRepo.createSession(userId))) {
+	public Boolean createSession(Integer userId) throws GlobalException {
+//		if (Boolean.TRUE.equals(isSessionExists(userId))) {
+//			log.error("SessionServiceImpl :: createSession(): Session already exists.");
+//			throw new GlobalException(Constants.SESSION_ALREADY_EXISTS_EXP, HttpStatus.UNAUTHORIZED);
+//		}
+		Boolean sessionCreated = sessionRepo.createSession(userId);
+		if (Boolean.FALSE.equals(sessionCreated)) {
 			log.error("SessionServiceImpl :: createSession() : Error in creating the session");
 			throw new GlobalException(Constants.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
-		return getSession(userId);
+		return sessionCreated;
 	}
 
 	@Override
