@@ -4,6 +4,10 @@ import lombok.Data;
 
 @Data
 public class ResponseFeedbackVO {
+	
+	private Integer responseId;
+
+	private Integer feedbackId;
 
 	private Integer feedbackerId;
 	

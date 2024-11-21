@@ -21,4 +21,18 @@ public interface INotificationService {
 
 	void sendSuccessTemporaryPassword(SignUpVO createdUser) throws GlobalException;
 
+	void sendSuccessExamCreationEmail(UserVO user, String examTitle) throws GlobalException;
+
+	void sendExamChangeEmail(UserVO user, String examTitle) throws GlobalException;
+
+	void sendExamAssignEmail(String emailId, String examTitle) throws GlobalException;
+
+	void sendExamReminder(String emailId, String examTitle) throws GlobalException;
+
+	void sendExamCompletion(UserVO user, String examTitle) throws GlobalException;
+
+	void sendExamGraded(String emailId, String examTitle) throws GlobalException;
+
+	void sendExamUnAssignEmail(String userEmail, String title) throws GlobalException;
+
 }

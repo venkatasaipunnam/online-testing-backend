@@ -1,7 +1,11 @@
 package com.clarku.ot.repository;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,16 +21,17 @@ import org.springframework.stereotype.Repository;
 import com.clarku.ot.config.SqlProperties;
 import com.clarku.ot.exception.GlobalException;
 import com.clarku.ot.utils.Constants;
-import com.clarku.ot.vo.AssignExamVO;
 import com.clarku.ot.vo.CreateExamVO;
 import com.clarku.ot.vo.CreateOptionVO;
 import com.clarku.ot.vo.CreateQuestionVO;
+import com.clarku.ot.vo.ExamSessionVO;
 import com.clarku.ot.vo.ExamVO;
 import com.clarku.ot.vo.OptionVO;
 import com.clarku.ot.vo.QuestionVO;
 import com.clarku.ot.vo.UpdateExamVO;
 import com.clarku.ot.vo.UpdateOptionVO;
 import com.clarku.ot.vo.UpdateQuestionVO;
+import com.clarku.ot.vo.UserExamResponseVO;
 import com.clarku.ot.vo.UserVO;
 
 import lombok.extern.log4j.Log4j2;
@@ -147,6 +152,25 @@ public class ExamRepositoryImpl implements IExamRepo{
 	}
 
 	@Override
+	public Boolean mapUpdateOptionWithQuestion(Integer questionId, Integer optionId, Boolean isCorrect) throws GlobalException {
+		int updateCount = 0;
+		MapSqlParameterSource parameters = new MapSqlParameterSource();
+		parameters.addValue("optionId", optionId);
+		parameters.addValue("questionId", questionId);
+		parameters.addValue("isCorrect", isCorrect);
+		try {
+			updateCount = namedParameterJdbcTemplate.update(SqlProperties.exam.get("mapUpdateOptionWithQuestion"), parameters);
+			return updateCount!=0;
+		} catch (DataAccessException exp) {
+			log.error("ExamRepositoryImpl :: mapOptionWithQuestion(): data access exception {}", exp.getMessage());
+			throw new GlobalException(Constants.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
+		} catch (Exception exp) {
+			log.error("ExamRepositoryImpl :: mapOptionWithQuestion(): exception : {}", exp.getMessage());
+			throw new GlobalException(Constants.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	@Override
 	public Boolean updateExam(UpdateExamVO examVO, UserVO user) throws GlobalException {
 		int updateCount = 0;
 		MapSqlParameterSource parameters = new MapSqlParameterSource();
@@ -182,6 +206,7 @@ public class ExamRepositoryImpl implements IExamRepo{
 		parameters.addValue("points", question.getPoints());
 		parameters.addValue("imagePath", question.getQuestionImagePath());
 		parameters.addValue("type", question.getQuestionType());
+		parameters.addValue("questionId", question.getQuestionId());
 		try {
 			updateCount = namedParameterJdbcTemplate.update(SqlProperties.exam.get("updateQuestion"), parameters);
 			return updateCount != 0;
@@ -203,6 +228,7 @@ public class ExamRepositoryImpl implements IExamRepo{
 		parameters.addValue("isCorrect", option.getIsCorrect());
 		parameters.addValue("imagePath", option.getOptionImagePath());
 		parameters.addValue("type", option.getOptionType());
+		parameters.addValue("optionId", option.getOptionId());
 		try {
 			updateCount = namedParameterJdbcTemplate.update(SqlProperties.exam.get("updateOption"), parameters);
 			return updateCount != 0;
@@ -314,7 +340,7 @@ public class ExamRepositoryImpl implements IExamRepo{
 	public QuestionVO retrieveQuestionDetails(Integer questionId) throws GlobalException {
 		QuestionVO question = null;
 		MapSqlParameterSource parameters = new MapSqlParameterSource();
-		parameters.addValue("examId", questionId);
+		parameters.addValue("questionId", questionId);
 		try {
 			question = namedParameterJdbcTemplate.queryForObject(SqlProperties.exam.get("getQuestionById"), parameters, new BeanPropertyRowMapper<QuestionVO>(QuestionVO.class));
 		} catch (DataAccessException exp) {
@@ -343,13 +369,13 @@ public class ExamRepositoryImpl implements IExamRepo{
 	}
 
 	@Override
-	public Boolean assignUserToExam(AssignExamVO assignExam, UserVO user) throws GlobalException {
-		int size = assignExam.getUserEmails().size();
+	public Boolean assignUserToExam(List<String> assignUsers, Integer examId, UserVO user) throws GlobalException {
+		int size = assignUsers.size();
 		MapSqlParameterSource[] batchArgs = new MapSqlParameterSource[size];
 	    IntStream.range(0, size).forEach(i -> {
 	        MapSqlParameterSource args = new MapSqlParameterSource();
-	        args.addValue("email", assignExam.getUserEmails().get(i));
-	        args.addValue("examId", assignExam.getExamId());
+	        args.addValue("email", assignUsers.get(i));
+	        args.addValue("examId", examId);
 	        args.addValue(USER_ID, user.getUserId());
 	        batchArgs[i] = args;
 	    });
@@ -366,12 +392,36 @@ public class ExamRepositoryImpl implements IExamRepo{
 	}
 
 	@Override
+	public Boolean unAssignUserToExam(List<String> unAssignUsers, Integer examId, UserVO user) throws GlobalException {
+		int size = unAssignUsers.size();
+		MapSqlParameterSource[] batchArgs = new MapSqlParameterSource[size];
+	    IntStream.range(0, size).forEach(i -> {
+	        MapSqlParameterSource args = new MapSqlParameterSource();
+	        args.addValue("email", unAssignUsers.get(i));
+	        args.addValue("examId", examId);
+	        args.addValue(USER_ID, user.getUserId());
+	        batchArgs[i] = args;
+	    });
+	    try {
+			int[] updatedCount = namedParameterJdbcTemplate.batchUpdate(SqlProperties.exam.get("unAssignExamToUser"), batchArgs);
+			return updatedCount.length != 0;
+	    } catch (DataAccessException exp) {
+			log.error("ExamRepositoryImpl :: unAssignUserToExam(): data access exception {}", exp.getMessage());
+			throw new GlobalException(Constants.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
+		} catch (Exception exp) {
+			log.error("ExamRepositoryImpl :: unAssignUserToExam(): exception {}", exp.getMessage());
+			throw new GlobalException(Constants.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+
+	@Override
 	public List<String> retrieveAssignedUsersToExam(Integer examId) throws GlobalException {
 		List<String> users = new ArrayList<>();
 		MapSqlParameterSource parameters = new MapSqlParameterSource();
 		parameters.addValue("examId", examId);
 		try {
-			users = namedParameterJdbcTemplate.query(SqlProperties.exam.get("getAllUsersAssignedToExam"), parameters, new BeanPropertyRowMapper<>(String.class));
+			users = namedParameterJdbcTemplate.queryForList(SqlProperties.exam.get("getAllUsersAssignedToExam"), parameters, String.class);
 		} catch (DataAccessException exp) {
 			log.error("ExamRepositoryImpl :: retrieveAssignedUsersToExam(): data access exception {}", exp.getMessage());
 		} catch (Exception exp) {
@@ -430,6 +480,223 @@ public class ExamRepositoryImpl implements IExamRepo{
 			throw new GlobalException(Constants.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 		return deletedCount != 0;
+	}
+
+	@Override
+	public List<QuestionVO> retrieveExamQuestionAndOptions(Integer examId) throws GlobalException {
+		List<QuestionVO> questions = new ArrayList<>();
+		List<OptionVO> options = new ArrayList<>();
+		MapSqlParameterSource parameters = new MapSqlParameterSource();
+		parameters.addValue("examId", examId);
+		try {
+			questions = namedParameterJdbcTemplate.query(SqlProperties.exam.get("getAllQuestionsOfExam"), parameters, new BeanPropertyRowMapper<>(QuestionVO.class));
+			options = namedParameterJdbcTemplate.query(SqlProperties.exam.get("getAllOptionsOfExam"), parameters, new BeanPropertyRowMapper<>(OptionVO.class));
+			
+			// Map options to questions
+			Map<Integer, List<OptionVO>> optionsByQuestionId = options.stream()
+			    .collect(Collectors.groupingBy(OptionVO::getQuestionId));
+
+			questions.forEach(question -> question.setOptions(optionsByQuestionId.get(question.getQuestionId())));
+
+		} catch (DataAccessException exp) {
+			log.error("ExamRepositoryImpl :: retrieveExamQuestionAndOptions(): data access exception {}", exp.getMessage());
+		} catch (Exception exp) {
+			log.error("ExamRepositoryImpl :: retrieveExamQuestionAndOptions(): exception {}", exp.getMessage());
+			throw new GlobalException(Constants.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		return questions;
+	}
+
+	@Override
+	public Boolean startUserExam(ExamVO exam, Integer userId) throws GlobalException {
+		
+		MapSqlParameterSource parameters = new MapSqlParameterSource();
+		parameters.addValue("examId", exam.getExamId());
+		parameters.addValue("duration", exam.getDuration());
+		parameters.addValue("currentTime", LocalDateTime.now());
+		parameters.addValue(USER_ID, userId);
+		try {
+			int inserted = 0;
+			inserted = namedParameterJdbcTemplate.update(SqlProperties.exam.get("startUserExam"), parameters);
+			return inserted != 0;
+		} catch (DataAccessException exp) {
+			log.error("ExamRepositoryImpl :: startUserExam(): data access exception {}", exp.getMessage());
+			throw new GlobalException(Constants.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
+		} catch (Exception exp) {
+			log.error("ExamRepositoryImpl :: startUserExam(): exception : {}", exp.getMessage());
+			throw new GlobalException(Constants.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	@Override
+	public List<ExamSessionVO> retrieveUserExamSession(Integer examId) throws GlobalException {
+		List<ExamSessionVO> allExamSessions = new ArrayList<>();
+		MapSqlParameterSource parameters = new MapSqlParameterSource();
+		parameters.addValue("examId", examId);
+		try {
+			allExamSessions = namedParameterJdbcTemplate.query(SqlProperties.exam.get("getExamSessionsByExamId"), parameters, new BeanPropertyRowMapper<>(ExamSessionVO.class));
+		} catch (DataAccessException exp) {
+			log.error("ExamRepositoryImpl :: retrieveUserExamSession(): data access exception {}", exp.getMessage());
+		} catch (Exception exp) {
+			log.error("ExamRepositoryImpl :: retrieveUserExamSession(): exception {}", exp.getMessage());
+			throw new GlobalException(Constants.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		return allExamSessions;
+	}
+
+	@Override
+	public List<UserExamResponseVO> retrieveUserExamResponses(ExamSessionVO examSessionVO) throws GlobalException {		
+		List<UserExamResponseVO> allUserExamResponses = new ArrayList<>();
+		MapSqlParameterSource parameters = new MapSqlParameterSource();
+		parameters.addValue("examId", examSessionVO.getExamId());
+		parameters.addValue(USER_ID, examSessionVO.getUserId());
+		parameters.addValue("examSessionId", String.valueOf(examSessionVO.getExamSessionId()));
+		try {
+			allUserExamResponses = namedParameterJdbcTemplate.query(SqlProperties.exam.get("getUserExamResponses"), parameters, new BeanPropertyRowMapper<>(UserExamResponseVO.class));
+		} catch (DataAccessException exp) {
+			log.error("ExamRepositoryImpl :: retrieveUserExamResponses(): data access exception {}", exp.getMessage());
+		} catch (Exception exp) {
+			log.error("ExamRepositoryImpl :: retrieveUserExamResponses(): exception {}", exp.getMessage());
+			throw new GlobalException(Constants.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		return allUserExamResponses;
+	}
+
+	@Override
+	public ExamSessionVO retrieveUserExamSessionDetails(String examSessionId) throws GlobalException {
+		ExamSessionVO examSession = null;
+		MapSqlParameterSource parameters = new MapSqlParameterSource();
+		parameters.addValue("examSessionId", examSessionId);
+		try {
+			examSession = namedParameterJdbcTemplate.queryForObject(SqlProperties.exam.get("getExamSessionBySessionId"), parameters, new BeanPropertyRowMapper<ExamSessionVO>(ExamSessionVO.class));
+		} catch (DataAccessException exp) {
+			log.error("ExamRepositoryImpl :: retrieveUserExamSessionDetails(): data access exception {}", exp.getMessage());
+		} catch (Exception exp) {
+			log.error("ExamRepositoryImpl :: retrieveUserExamSessionDetails(): exception {}", exp.getMessage());
+			throw new GlobalException(Constants.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		return examSession;
+	}
+
+	@Override
+	public ExamSessionVO retrieveUserExamSessionByExamIdUserId(Integer examId, Integer userId) throws GlobalException {
+		ExamSessionVO examSession = null;
+		MapSqlParameterSource parameters = new MapSqlParameterSource();
+		parameters.addValue("examId", examId);
+		parameters.addValue(USER_ID, userId);
+		try {
+			examSession = namedParameterJdbcTemplate.queryForObject(SqlProperties.exam.get("getExamSessionByExamIdUserId"), parameters, new BeanPropertyRowMapper<ExamSessionVO>(ExamSessionVO.class));
+		} catch (DataAccessException exp) {
+			log.error("ExamRepositoryImpl :: retrieveUserExamSessionByExamIdUserId(): data access exception {} for userId {} and examId {}", exp.getMessage(), userId, examId);
+		} catch (Exception exp) {
+			log.error("ExamRepositoryImpl :: retrieveUserExamSessionByExamIdUserId(): exception {}", exp.getMessage());
+			throw new GlobalException(Constants.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		return examSession;
+	}
+
+	@Override
+	public Boolean updateUserExamResponse(UserExamResponseVO exam, UserVO user, ExamSessionVO examSession) throws GlobalException {
+		int isUpdated = 0;
+		MapSqlParameterSource parameters = new MapSqlParameterSource();
+		parameters.addValue("examId", exam.getExamId());
+		parameters.addValue("questionId", exam.getQuestionId());
+		parameters.addValue("optionId", exam.getOptionId());
+		parameters.addValue("answer", exam.getAnswerResponse());
+		parameters.addValue(USER_ID, user.getUserId());
+		parameters.addValue("examSessionId", String.valueOf(examSession.getExamSessionId()));
+		try {
+			isUpdated = namedParameterJdbcTemplate.update(SqlProperties.exam.get("updateUserExamResponse"), parameters);
+			return isUpdated != 0;
+		} catch (DataAccessException exp) {
+			log.error("ExamRepositoryImpl :: updateUserExamResponse(): data access exception {}", exp.getMessage());
+			throw new GlobalException(Constants.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
+		} catch (Exception exp) {
+			log.error("ExamRepositoryImpl :: updateUserExamResponse(): exception : {}", exp.getMessage());
+			throw new GlobalException(Constants.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	@Override
+	public Integer saveUserExamResponse(UserExamResponseVO exam, UserVO user, ExamSessionVO examSession) throws GlobalException {
+		MapSqlParameterSource parameters = new MapSqlParameterSource();
+		parameters.addValue("examId", exam.getExamId());
+		parameters.addValue("questionId", exam.getQuestionId());
+		parameters.addValue("optionId", exam.getOptionId());
+		parameters.addValue("answer", exam.getAnswerResponse());
+		parameters.addValue(USER_ID, user.getUserId());
+		parameters.addValue("examSessionId", String.valueOf(examSession.getExamSessionId()));
+		try {
+			KeyHolder keyHolder = new GeneratedKeyHolder();
+			namedParameterJdbcTemplate.update(SqlProperties.exam.get("saveUserExamResponse"), parameters, keyHolder, new String[] { "responseId" });
+			return keyHolder.getKey().intValue();
+		} catch (DataAccessException exp) {
+			log.error("ExamRepositoryImpl :: saveUserExamResponse(): data access exception {}", exp.getMessage());
+			throw new GlobalException(Constants.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
+		} catch (Exception exp) {
+			log.error("ExamRepositoryImpl :: saveUserExamResponse(): exception : {}", exp.getMessage());
+			throw new GlobalException(Constants.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	@Override
+	public Boolean endUserExam(Integer userId, Integer examId, UUID examSessionId) throws GlobalException {
+		int updateCount = 0;
+		MapSqlParameterSource parameters = new MapSqlParameterSource();
+		parameters.addValue(USER_ID, userId);
+		parameters.addValue("examId", examId);
+		parameters.addValue("examSessionId", String.valueOf(examSessionId));
+		parameters.addValue("currentTime", LocalDateTime.now());
+		try {
+			updateCount = namedParameterJdbcTemplate.update(SqlProperties.exam.get("endUserExamSession"), parameters);
+			return updateCount != 0;
+		} catch (DataAccessException exp) {
+			log.error("ExamRepositoryImpl :: endUserExam(): data access exception {}", exp.getMessage());
+			throw new GlobalException(Constants.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
+		} catch (Exception exp) {
+			log.error("ExamRepositoryImpl :: endUserExam(): exception : {}", exp.getMessage());
+			throw new GlobalException(Constants.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	@Override
+	public Boolean deleteUserExamResponse(ExamSessionVO examSession, UserVO user, UserExamResponseVO exam)
+			throws GlobalException {
+		int deletedCount = 0;
+		MapSqlParameterSource parameters = new MapSqlParameterSource();
+		parameters.addValue("examId", exam.getExamId());
+		parameters.addValue("questionId", exam.getQuestionId());
+		parameters.addValue("optionId", exam.getOptionId());
+		parameters.addValue(USER_ID, user.getUserId());
+		parameters.addValue("examSessionId", String.valueOf(examSession.getExamSessionId()));
+		try {
+			deletedCount = namedParameterJdbcTemplate.update(SqlProperties.exam.get("deleteUserExamResponse"), parameters);
+		} catch (DataAccessException exp) {
+			log.error("ExamRepositoryImpl :: deleteUserExamResponse(): data access exception {} {}", exp.getMessage(), exp.getCause());
+			throw new GlobalException(Constants.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
+		} catch (Exception exp) {
+			log.error("ExamRepositoryImpl :: deleteUserExamResponse(): exception {} {}", exp.getMessage(), exp.getCause());
+			throw new GlobalException(Constants.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		return deletedCount != 0;
+	}
+
+	@Override
+	public Boolean updateExamStatus(ExamVO exam, String status) throws GlobalException {
+		int updateCount = 0;
+		MapSqlParameterSource parameters = new MapSqlParameterSource();
+		parameters.addValue("examId", exam.getExamId());
+		parameters.addValue("status", status);
+		try {
+			updateCount = namedParameterJdbcTemplate.update(SqlProperties.exam.get("updateExamStatus"), parameters);
+			return updateCount != 0;
+		} catch (DataAccessException exp) {
+			log.error("ExamRepositoryImpl :: updateExamStatus(): data access exception {}", exp.getMessage());
+			throw new GlobalException(Constants.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
+		} catch (Exception exp) {
+			log.error("ExamRepositoryImpl :: updateExamStatus(): exception : {}", exp.getMessage());
+			throw new GlobalException(Constants.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
 	}
 
 }

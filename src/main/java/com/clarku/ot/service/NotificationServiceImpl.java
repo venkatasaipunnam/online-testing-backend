@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import com.clarku.ot.exception.GlobalException;
 import com.clarku.ot.utils.Constants;
 import com.clarku.ot.utils.EmailHelper;
+import com.clarku.ot.vo.AssignExamVO;
 import com.clarku.ot.vo.CustomMessageVO;
 import com.clarku.ot.vo.EmailVO;
 import com.clarku.ot.vo.SignUpVO;
@@ -109,6 +110,97 @@ public class NotificationServiceImpl implements INotificationService {
 		HashMap<String, String> variables = new HashMap<>();
 		variables.put(FIRST_NAME, createdUser.getFirstName());
 		variables.put("tempPass", createdUser.getCreatePassword());
+		emailVO.setVariables(variables);
+		email.sendEMail(emailVO);
+	}
+
+	@Override
+	public void sendSuccessExamCreationEmail(UserVO user, String examTitle) throws GlobalException {
+		EmailVO emailVO = new EmailVO();
+		emailVO.setSendTo(user.getEmailId());
+		emailVO.setSubject(Constants.NOTIFY_EXAM_CREATION_SUB + examTitle);
+		emailVO.setTemplateName(Constants.NOTIFY_EXAM_CREATION_TEMPLATE);
+		HashMap<String, String> variables = new HashMap<>();
+		variables.put(FIRST_NAME, user.getFirstName());
+		variables.put("examTitle", examTitle);
+		emailVO.setVariables(variables);
+		email.sendEMail(emailVO);
+	}
+
+	@Override
+	public void sendExamChangeEmail(UserVO user, String examTitle) throws GlobalException {
+		EmailVO emailVO = new EmailVO();
+		emailVO.setSendTo(user.getEmailId());
+		emailVO.setSubject(Constants.NOTIFY_EXAM_UPDATE_SUB + examTitle);
+		emailVO.setTemplateName(Constants.NOTIFY_EXAM_UPDATE_TEMPLATE);
+		HashMap<String, String> variables = new HashMap<>();
+		variables.put(FIRST_NAME, user.getFirstName());
+		variables.put("examTitle", examTitle);
+		emailVO.setVariables(variables);
+		email.sendEMail(emailVO);
+	}
+
+	@Override
+	public void sendExamAssignEmail(String emailId, String examTitle) throws GlobalException {
+		EmailVO emailVO = new EmailVO();
+		emailVO.setSendTo(emailId);
+		emailVO.setSubject(Constants.NOTIFY_EXAM_ASSIGNED_SUB + examTitle);
+		emailVO.setTemplateName(Constants.NOTIFY_EXAM_ASSIGNED_TEMPLATE);
+		HashMap<String, String> variables = new HashMap<>();
+		variables.put("examTitle", examTitle);
+		emailVO.setVariables(variables);
+		email.sendEMail(emailVO);
+		
+	}
+
+	@Override
+	public void sendExamReminder(String emailId, String examTitle) throws GlobalException {
+		EmailVO emailVO = new EmailVO();
+		emailVO.setSendTo(emailId);
+		emailVO.setSubject(Constants.NOTIFY_EXAM_PRIOR_DAY_SUB + examTitle);
+		emailVO.setTemplateName(Constants.NOTIFY_EXAM_PRIOR_DAY_TEMPLATE);
+		HashMap<String, String> variables = new HashMap<>();
+		variables.put("examTitle", examTitle);
+		emailVO.setVariables(variables);
+		email.sendEMail(emailVO);
+		
+	}
+
+	@Override
+	public void sendExamCompletion(UserVO user, String examTitle) throws GlobalException {
+		EmailVO emailVO = new EmailVO();
+		emailVO.setSendTo(user.getEmailId());
+		emailVO.setSubject(Constants.NOTIFY_EXAM_COMPLETION_SUB + examTitle);
+		emailVO.setTemplateName(Constants.NOTIFY_EXAM_COMPLETION_TEMPLATE);
+		HashMap<String, String> variables = new HashMap<>();
+		variables.put("examTitle", examTitle);
+		variables.put(FIRST_NAME, user.getFirstName());
+		emailVO.setVariables(variables);
+		email.sendEMail(emailVO);
+		
+	}
+
+	@Override
+	public void sendExamGraded(String emailId, String examTitle) throws GlobalException {
+		EmailVO emailVO = new EmailVO();
+		emailVO.setSendTo(emailId);
+		emailVO.setSubject(Constants.NOTIFY_EXAM_GRADED_SUB + examTitle);
+		emailVO.setTemplateName(Constants.NOTIFY_EXAM_GRADED_TEMPLATE);
+		HashMap<String, String> variables = new HashMap<>();
+		variables.put("examTitle", examTitle);
+		emailVO.setVariables(variables);
+		email.sendEMail(emailVO);
+		
+	}
+
+	@Override
+	public void sendExamUnAssignEmail(String userEmail, String title) throws GlobalException {
+		EmailVO emailVO = new EmailVO();
+		emailVO.setSendTo(userEmail);
+		emailVO.setSubject(Constants.NOTIFY_EXAM_ASSIGNED_SUB + title);
+		emailVO.setTemplateName(Constants.NOTIFY_EXAM_ASSIGNED_TEMPLATE);
+		HashMap<String, String> variables = new HashMap<>();
+		variables.put("examTitle", title);
 		emailVO.setVariables(variables);
 		email.sendEMail(emailVO);
 	}

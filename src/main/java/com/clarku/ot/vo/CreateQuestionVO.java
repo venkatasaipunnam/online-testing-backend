@@ -29,7 +29,7 @@ public class CreateQuestionVO {
 	@NotNull(message = "Please provide question type", groups = { CreateQuestionValidation.class, CreateExamQuestionValidation.class })
 	private String questionType;
 	
-	@NotEmpty(message = "Please provide question Points", groups = { CreateQuestionValidation.class, CreateExamQuestionValidation.class })
+	@NotNull(message = "Please provide question Points", groups = { CreateQuestionValidation.class, CreateExamQuestionValidation.class })
 	private Double points;
 	
 	private List<CreateOptionVO> options;

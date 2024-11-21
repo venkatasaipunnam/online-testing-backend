@@ -1,6 +1,7 @@
 package com.clarku.ot.controller;
 
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -33,7 +34,9 @@ import com.clarku.ot.vo.CreateOptionVO.CreateQuestionOptionValidation;
 import com.clarku.ot.vo.CreateQuestionVO;
 import com.clarku.ot.vo.CreateQuestionVO.CreateExamQuestionValidation;
 import com.clarku.ot.vo.ErrorVO;
+import com.clarku.ot.vo.ExamSessionVO;
 import com.clarku.ot.vo.ExamVO;
+import com.clarku.ot.vo.QuestionVO;
 import com.clarku.ot.vo.SessionVO;
 import com.clarku.ot.vo.UpdateExamVO;
 import com.clarku.ot.vo.UpdateExamVO.UpdateExamValidation;
@@ -41,6 +44,7 @@ import com.clarku.ot.vo.UpdateOptionVO;
 import com.clarku.ot.vo.UpdateOptionVO.UpdateOptionValidation;
 import com.clarku.ot.vo.UpdateQuestionVO;
 import com.clarku.ot.vo.UpdateQuestionVO.UpdateQuestionValidation;
+import com.clarku.ot.vo.UserExamResponseVO;
 import com.clarku.ot.vo.UserVO;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -84,6 +88,9 @@ public class ExamController {
 			throw new GlobalException("Access not granted", HttpStatus.FORBIDDEN);
 		}
 		Boolean isExamCreated = examService.createExam(examVo, user);
+		if (isExamCreated) {
+			notify.sendSuccessExamCreationEmail(user, examVo.getTitle());
+		}
 		return new ResponseEntity<>(isExamCreated, HttpStatus.OK);
 	}
 
@@ -103,6 +110,9 @@ public class ExamController {
 			throw new GlobalException("Access not granted", HttpStatus.FORBIDDEN);
 		}
 		Boolean isExamUpdated = examService.updateExam(examVo, user);
+		if (isExamUpdated) {
+			notify.sendExamChangeEmail(user, examVo.getTitle());
+		}
 		return new ResponseEntity<>(isExamUpdated, HttpStatus.OK);
 	}
 
@@ -134,14 +144,14 @@ public class ExamController {
 	    @ApiResponse(responseCode = "500", description = "Unexpected error.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorVO.class)))
 	})
 	@PostMapping("question/create")
-	public ResponseEntity<Boolean> createQuestion(@RequestHeader HttpHeaders headers, @Validated(CreateExamQuestionValidation.class) @RequestBody CreateQuestionVO question) throws GlobalException {
+	public ResponseEntity<QuestionVO> createQuestion(@RequestHeader HttpHeaders headers, @Validated(CreateExamQuestionValidation.class) @RequestBody CreateQuestionVO question) throws GlobalException {
 		SessionVO sessionDetails = authService.retrieveSession(headers);
 		UserVO user = userService.getUser(sessionDetails.getUserId());
 		if (Constants.STUDENT.equalsIgnoreCase(user.getUserType())) {
 			throw new GlobalException("Access not granted", HttpStatus.FORBIDDEN);
 		}
-		Boolean isQuestionCreated = examService.createQuestion(question, user);
-		return new ResponseEntity<>(isQuestionCreated, HttpStatus.OK);
+		QuestionVO questionCreated = examService.createQuestion(question, user);
+		return new ResponseEntity<>(questionCreated, HttpStatus.OK);
 	}
 
 	@Operation(summary = "Update Question API", description = "This API is mainly for the post login and passes the sessionid through headers. It updates the Question for the Exam.")
@@ -184,21 +194,21 @@ public class ExamController {
 
 	@Operation(summary = "Create Option API", description = "This API is mainly for the post login and passes the sessionid through headers. It creates the Option for the Question.")
 	@ApiResponses(value = {
-	    @ApiResponse(responseCode = "200", description = "Successfully Created", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Boolean.class))), 
+	    @ApiResponse(responseCode = "200", description = "Successfully Created", content = @Content(mediaType = "application/json", schema = @Schema(implementation = CreateOptionVO.class))), 
 	    @ApiResponse(responseCode = "400", description = "Bad request. Please check all the required fields are entered or not", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorVO.class))),
 	    @ApiResponse(responseCode = "401", description = "Authorization information is missing or invalid.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorVO.class))),
 	    @ApiResponse(responseCode = "404", description = "A user with the specified ID was not found.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorVO.class))),
 	    @ApiResponse(responseCode = "500", description = "Unexpected error.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorVO.class)))
 	})
 	@PostMapping("question/option/create")
-	public ResponseEntity<Boolean> createOption(@RequestHeader HttpHeaders headers, @Validated(CreateQuestionOptionValidation.class) @RequestBody CreateOptionVO option) throws GlobalException {
+	public ResponseEntity<CreateOptionVO> createOption(@RequestHeader HttpHeaders headers, @Validated(CreateQuestionOptionValidation.class) @RequestBody CreateOptionVO option) throws GlobalException {
 		SessionVO sessionDetails = authService.retrieveSession(headers);
 		UserVO user = userService.getUser(sessionDetails.getUserId());
 		if (Constants.STUDENT.equalsIgnoreCase(user.getUserType())) {
 			throw new GlobalException("Access not granted", HttpStatus.FORBIDDEN);
 		}
-		Boolean isOptionCreated = examService.createOption(option, user);
-		return new ResponseEntity<>(isOptionCreated, HttpStatus.OK);
+		CreateOptionVO optionCreated = examService.createOption(option, user);
+		return new ResponseEntity<>(optionCreated, HttpStatus.OK);
 	}
 
 	@Operation(summary = "Update Option API", description = "This API is mainly for the post login and passes the sessionid through headers. It updates the Options in the question.")
@@ -274,7 +284,6 @@ public class ExamController {
 		return new ResponseEntity<>(exam, HttpStatus.OK);
 	}
 
-
 	@Operation(summary = "Retrieve Exam Details Assigned on User", description = "This API is mainly for the post login and passes the sessionid through headers. It retrieves the Exams assigned to the logged-in user.")
 	@ApiResponses(value = {
 	    @ApiResponse(responseCode = "200", description = "Successfully Created", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ExamVO.class))), 
@@ -308,6 +317,57 @@ public class ExamController {
 		}
 		Boolean isExamAssigned = examService.assignExamsToUser(assignExam, user);
 		return new ResponseEntity<>(isExamAssigned, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Start Exam", description = "This API is mainly for the post login and passes the sessionid through headers. It assignes the Exams to the students.")
+	@ApiResponses(value = {
+	    @ApiResponse(responseCode = "200", description = "Successfully Created", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ExamSessionVO.class))), 
+	    @ApiResponse(responseCode = "400", description = "Bad request. Please check all the required fields are entered or not", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorVO.class))),
+	    @ApiResponse(responseCode = "401", description = "Authorization information is missing or invalid.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorVO.class))),
+	    @ApiResponse(responseCode = "404", description = "A user with the specified ID was not found.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorVO.class))),
+	    @ApiResponse(responseCode = "500", description = "Unexpected error.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorVO.class)))
+	})
+	@PostMapping("start")
+	public ResponseEntity<ExamSessionVO> startExamsToUser(@RequestHeader HttpHeaders headers, @RequestBody Integer examId) throws GlobalException {
+		SessionVO sessionDetails = authService.retrieveSession(headers);
+		UserVO user = userService.getUser(sessionDetails.getUserId());
+		ExamSessionVO examSession = examService.startUserExam(examId, user);
+		return new ResponseEntity<>(examSession, HttpStatus.OK);
+	}
+
+	@Operation(summary = "End Exam", description = "This API is mainly for the post login and passes the sessionid through headers. It assignes the Exams to the students.")
+	@ApiResponses(value = {
+	    @ApiResponse(responseCode = "200", description = "Successfully Created", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Boolean.class))), 
+	    @ApiResponse(responseCode = "400", description = "Bad request. Please check all the required fields are entered or not", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorVO.class))),
+	    @ApiResponse(responseCode = "401", description = "Authorization information is missing or invalid.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorVO.class))),
+	    @ApiResponse(responseCode = "404", description = "A user with the specified ID was not found.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorVO.class))),
+	    @ApiResponse(responseCode = "500", description = "Unexpected error.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorVO.class)))
+	})
+	@PostMapping("end")
+	public ResponseEntity<Boolean> endUserExam(@RequestHeader HttpHeaders headers, @RequestBody Integer examId) throws GlobalException {
+		SessionVO sessionDetails = authService.retrieveSession(headers);
+		ExamSessionVO examSession = authService.retrieveExamSession(headers);
+		UserVO user = userService.getUser(sessionDetails.getUserId());
+		Boolean isExamEnded = examService.endUserExam(user, examId, examSession);
+		return new ResponseEntity<>(isExamEnded, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Save User Response", description = "This API is mainly for the post login and passes the sessionid through headers. It assignes the Exams to the students.")
+	@ApiResponses(value = {
+	    @ApiResponse(responseCode = "200", description = "Successfully Created", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UserExamResponseVO.class))), 
+	    @ApiResponse(responseCode = "400", description = "Bad request. Please check all the required fields are entered or not", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorVO.class))),
+	    @ApiResponse(responseCode = "401", description = "Authorization information is missing or invalid.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorVO.class))),
+	    @ApiResponse(responseCode = "404", description = "A user with the specified ID was not found.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorVO.class))),
+	    @ApiResponse(responseCode = "500", description = "Unexpected error.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorVO.class)))
+	})
+	@PostMapping("response/save")
+	public ResponseEntity<UserExamResponseVO> saveUSerExamResponse(@RequestHeader HttpHeaders headers, @RequestBody UserExamResponseVO examResponse) throws GlobalException {
+		SessionVO sessionDetails = authService.retrieveSession(headers);
+		ExamSessionVO examSession = authService.retrieveExamSession(headers);
+		UserVO user = userService.getUser(sessionDetails.getUserId());
+		examResponse.setUserId(user.getUserId());
+		UserExamResponseVO response = examService.saveUserExamResponse(examResponse, user, examSession);
+		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
 }
