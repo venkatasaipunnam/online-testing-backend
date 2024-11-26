@@ -45,4 +45,8 @@ public class ExamVO {
 
 	private String examIndicator;
 
+	private Boolean isResultsPublished;
+
+	private Integer allowedAttempts;
+
 }

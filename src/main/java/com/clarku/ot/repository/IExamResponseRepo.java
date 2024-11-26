@@ -26,4 +26,20 @@ public interface IExamResponseRepo {
 
 	Boolean saveExamFeedback(UserVO user, StudentResponseVO response, ResponseFeedbackVO feedback) throws GlobalException;
 
+	ResponseFeedbackVO retrieveExamFeedbackByFeedbackId(Integer feedbackId) throws GlobalException;
+
+	Boolean updateExamFeedbackByFeedbackId(ResponseFeedbackVO feedback, UserVO user) throws GlobalException;
+
+	ResponseFeedbackVO checkIsFeedbackProvided(Integer responseId) throws GlobalException;
+
+	Boolean saveExamFeedback(UserVO user, ResponseFeedbackVO feedback) throws GlobalException;
+
+	Boolean saveStudentGrades(UUID examSession) throws GlobalException;
+
+	Integer getExamIdByExamSession(UUID examSession) throws GlobalException;
+
+	Boolean savestudentResults(Integer studentId, Integer examId, Double totalPoints) throws GlobalException;
+
+	Boolean publishExamResults(Integer examId) throws GlobalException;
+
 }

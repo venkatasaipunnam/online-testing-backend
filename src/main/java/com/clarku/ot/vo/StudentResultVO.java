@@ -1,11 +1,14 @@
 package com.clarku.ot.vo;
 
 import java.util.List;
+import java.util.UUID;
 
 import lombok.Data;
 
 @Data
 public class StudentResultVO {
+
+	private UUID examSession;
 
 	private Integer studentId;
 	

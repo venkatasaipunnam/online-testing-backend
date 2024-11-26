@@ -95,9 +95,9 @@ public class ExamResponseRepositoryImpl implements IExamResponseRepo {
 	public List<ResponseFeedbackVO> retrieveExamFeedbacksBySession(UUID examSession) throws GlobalException {
 		List<ResponseFeedbackVO> feedbacks = new ArrayList<>();
 		MapSqlParameterSource parameters = new MapSqlParameterSource();
-		parameters.addValue("examSession", examSession);
+		parameters.addValue("examSession", examSession.toString());
 		try {
-			feedbacks = namedParameterJdbcTemplate.query(SqlProperties.grade.get("getResponseFeedbacksbyExamId"), parameters, new BeanPropertyRowMapper<>(ResponseFeedbackVO.class));
+			feedbacks = namedParameterJdbcTemplate.query(SqlProperties.grade.get("getResponseFeedbacksbyStudentSession"), parameters, new BeanPropertyRowMapper<>(ResponseFeedbackVO.class));
 		} catch (DataAccessException exp) {
 			log.error("ExamResponseRepositoryImpl :: retrieveExamFeedbacksBySession(): data access exception {}", exp.getMessage());
 		} catch (Exception exp) {
@@ -128,7 +128,7 @@ public class ExamResponseRepositoryImpl implements IExamResponseRepo {
 	public List<StudentResponseVO> retrieveStudentResponsesByStudentSession(UUID examSession) throws GlobalException {
 		List<StudentResponseVO> feedbacks = new ArrayList<>();
 		MapSqlParameterSource parameters = new MapSqlParameterSource();
-		parameters.addValue("examSession", examSession);
+		parameters.addValue("examSession", examSession.toString());
 		try {
 			feedbacks = namedParameterJdbcTemplate.query(SqlProperties.response.get("getStudentResponsesbySession"), parameters, new BeanPropertyRowMapper<>(StudentResponseVO.class));
 		} catch (DataAccessException exp) {
@@ -163,6 +163,168 @@ public class ExamResponseRepositoryImpl implements IExamResponseRepo {
 			throw new GlobalException(Constants.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 		return insertedCount != 0;
+	}
+
+
+
+	@Override
+	public ResponseFeedbackVO retrieveExamFeedbackByFeedbackId(Integer feedbackId) throws GlobalException {
+		ResponseFeedbackVO feedbacks = null;
+		MapSqlParameterSource parameters = new MapSqlParameterSource();
+		parameters.addValue("feedbackId", feedbackId);
+		try {
+			feedbacks = namedParameterJdbcTemplate.queryForObject(SqlProperties.grade.get("getResponseFeedbacksbyId"), parameters, new BeanPropertyRowMapper<>(ResponseFeedbackVO.class));
+		} catch (DataAccessException exp) {
+			log.error("ExamResponseRepositoryImpl :: retrieveExamFeedbacksBySession(): data access exception {}", exp.getMessage());
+		} catch (Exception exp) {
+			log.error("ExamResponseRepositoryImpl :: retrieveExamFeedbacksBySession(): exception {}", exp.getMessage());
+			throw new GlobalException(Constants.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		return feedbacks;
+	}
+
+	@Override
+	public Boolean updateExamFeedbackByFeedbackId(ResponseFeedbackVO feedback, UserVO user) throws GlobalException {
+		int updateCount = 0;
+		MapSqlParameterSource parameters = new MapSqlParameterSource();
+		parameters.addValue(USER_ID, user.getUserId());
+		parameters.addValue("feedbackId", feedback.getFeedbackId());
+		parameters.addValue("responseId", feedback.getResponseId());
+		parameters.addValue("feedback", feedback.getFeedback());
+		parameters.addValue("isCorrect", feedback.getIsCorrect());
+		parameters.addValue("points", feedback.getGainedPoints());
+		try {
+			updateCount = namedParameterJdbcTemplate.update(SqlProperties.grade.get("updateResponseFeedback"), parameters);
+
+		} catch (DataAccessException exp) {
+			log.error("ExamResponseRepositoryImpl :: saveExamFeedback(): data access exception {}", exp.getMessage());
+			throw new GlobalException(Constants.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
+		} catch (Exception exp) {
+			log.error("ExamResponseRepositoryImpl :: saveExamFeedback(): exception : {}", exp.getMessage());
+			throw new GlobalException(Constants.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		return updateCount != 0;
+	}
+
+	@Override
+	public ResponseFeedbackVO checkIsFeedbackProvided(Integer responseId) throws GlobalException {
+		ResponseFeedbackVO feedbacks = null;
+		MapSqlParameterSource parameters = new MapSqlParameterSource();
+		parameters.addValue("responseId", responseId);
+		try {
+			feedbacks = namedParameterJdbcTemplate.queryForObject(SqlProperties.grade.get("getResponseFeedbacksbyResponseId"), parameters, new BeanPropertyRowMapper<>(ResponseFeedbackVO.class));
+		} catch (DataAccessException exp) {
+			log.error("ExamResponseRepositoryImpl :: retrieveExamFeedbacksBySession(): data access exception {}", exp.getMessage());
+		} catch (Exception exp) {
+			log.error("ExamResponseRepositoryImpl :: retrieveExamFeedbacksBySession(): exception {}", exp.getMessage());
+			throw new GlobalException(Constants.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		return feedbacks;
+	}
+
+
+
+	@Override
+	public Boolean saveExamFeedback(UserVO user, ResponseFeedbackVO feedback) throws GlobalException {
+		int insertedCount = 0;
+		MapSqlParameterSource parameters = new MapSqlParameterSource();
+		parameters.addValue(USER_ID, user.getUserId());
+		parameters.addValue("responseId", feedback.getResponseId());
+		parameters.addValue("feedback", feedback.getFeedback());
+		parameters.addValue("isCorrect", feedback.getIsCorrect());
+		parameters.addValue("points", feedback.getGainedPoints());
+		try {
+			KeyHolder keyHolder = new GeneratedKeyHolder();
+			insertedCount = namedParameterJdbcTemplate.update(SqlProperties.grade.get("saveResponseFeedback"), parameters, keyHolder, new String[] { "feedback_id" });
+			feedback.setFeedbackId(keyHolder.getKey().intValue());
+		} catch (DataAccessException exp) {
+			log.error("ExamResponseRepositoryImpl :: saveExamFeedback(): data access exception {}", exp.getMessage());
+			throw new GlobalException(Constants.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
+		} catch (Exception exp) {
+			log.error("ExamResponseRepositoryImpl :: saveExamFeedback(): exception : {}", exp.getMessage());
+			throw new GlobalException(Constants.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		return insertedCount != 0;
+	}
+
+
+
+	@Override
+	public Boolean saveStudentGrades(UUID examSession) throws GlobalException {
+		int updateCount = 0;
+		MapSqlParameterSource parameters = new MapSqlParameterSource();
+		parameters.addValue("examSession", examSession.toString());
+		try {
+			updateCount = namedParameterJdbcTemplate.update(SqlProperties.grade.get("updateStudentGradesIndicator"), parameters);
+
+		} catch (DataAccessException exp) {
+			log.error("ExamResponseRepositoryImpl :: saveExamFeedback(): data access exception {}", exp.getMessage());
+			throw new GlobalException(Constants.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
+		} catch (Exception exp) {
+			log.error("ExamResponseRepositoryImpl :: saveExamFeedback(): exception : {}", exp.getMessage());
+			throw new GlobalException(Constants.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		return updateCount != 0;
+	}
+
+
+
+	@Override
+	public Integer getExamIdByExamSession(UUID examSession) throws GlobalException {
+		Integer examId = null;
+		MapSqlParameterSource parameters = new MapSqlParameterSource();
+		parameters.addValue("examSession", examSession.toString());
+		try {
+			examId = namedParameterJdbcTemplate.queryForObject(SqlProperties.exam.get("getExamIdByExamSession"), parameters, Integer.class);
+		} catch (DataAccessException exp) {
+			log.error("ExamResponseRepositoryImpl :: retrieveExamFeedbacksBySession(): data access exception {}", exp.getMessage());
+		} catch (Exception exp) {
+			log.error("ExamResponseRepositoryImpl :: retrieveExamFeedbacksBySession(): exception {}", exp.getMessage());
+			throw new GlobalException(Constants.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		return examId;
+	}
+
+
+
+	@Override
+	public Boolean savestudentResults(Integer studentId, Integer examId, Double totalPoints) throws GlobalException {
+		int savedStudentResults = 0;
+		MapSqlParameterSource parameters = new MapSqlParameterSource();
+		parameters.addValue("studentId", studentId);
+		parameters.addValue("examId", examId);
+		parameters.addValue("points", totalPoints);
+		try {
+			savedStudentResults = namedParameterJdbcTemplate.update(SqlProperties.grade.get("saveStudentResults"), parameters);
+
+		} catch (DataAccessException exp) {
+			log.error("ExamResponseRepositoryImpl :: savestudentResults(): data access exception {}", exp.getMessage());
+			throw new GlobalException(Constants.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
+		} catch (Exception exp) {
+			log.error("ExamResponseRepositoryImpl :: savestudentResults(): exception : {}", exp.getMessage());
+			throw new GlobalException(Constants.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		return savedStudentResults != 0;
+	}
+
+
+
+	@Override
+	public Boolean publishExamResults(Integer examId) throws GlobalException {
+		int savedStudentResults = 0;
+		MapSqlParameterSource parameters = new MapSqlParameterSource();
+		parameters.addValue("examId", examId);
+		try {
+			savedStudentResults = namedParameterJdbcTemplate.update(SqlProperties.grade.get("publishExamResultsQuery"), parameters);
+
+		} catch (DataAccessException exp) {
+			log.error("ExamResponseRepositoryImpl :: savestudentResults(): data access exception {}", exp.getMessage());
+			throw new GlobalException(Constants.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
+		} catch (Exception exp) {
+			log.error("ExamResponseRepositoryImpl :: savestudentResults(): exception : {}", exp.getMessage());
+			throw new GlobalException(Constants.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		return savedStudentResults != 0;
 	}
 
 }

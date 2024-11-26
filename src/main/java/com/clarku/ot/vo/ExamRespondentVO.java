@@ -19,4 +19,6 @@ public class ExamRespondentVO {
 
 	private String userType;
 
+	private Boolean isGraded;
+
 }

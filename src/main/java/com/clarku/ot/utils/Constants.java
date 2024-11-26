@@ -140,4 +140,8 @@ public class Constants {
 
 	public static final String NOTIFY_EXAM_GRADED_TEMPLATE = "examGraded";
 
+	public static final String GRADED = "GRADED";
+
+	public static final String GRADES_INPROGRESS = "GRADES INPROGRESS";
+
 }

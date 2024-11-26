@@ -16,4 +16,8 @@ public class ResponseFeedbackVO {
 	private String feedback;
 	
 	private String feedbackPostedTime;
+	
+	private Boolean isCorrect;
+	
+	private Double gainedPoints;
 }

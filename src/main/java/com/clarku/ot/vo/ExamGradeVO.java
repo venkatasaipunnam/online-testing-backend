@@ -5,13 +5,7 @@ import java.util.List;
 import lombok.Data;
 
 @Data
-public class ExamResultVO {
-
-	private Integer examId;
-	
-	private String examTitle;
-	
-	private String examDescription;
+public class ExamGradeVO extends ExamVO {
 	
 	private Integer numberOfStudentsTaken;
 	
@@ -26,4 +20,5 @@ public class ExamResultVO {
 	private Double leastScore;
 	
 	private List<StudentResultVO> studentResults;
+	
 }

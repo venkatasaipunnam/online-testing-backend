@@ -1,5 +1,7 @@
 package com.clarku.ot.vo;
 
+import java.util.List;
+
 import lombok.Data;
 
 @Data
@@ -12,6 +14,8 @@ public class StudentResponseVO {
 	private Integer questionId;
 	
 	private Integer choosenOption;
+	
+	private List<Integer> choosenOptions;
 	
 	private String answerText;
 	

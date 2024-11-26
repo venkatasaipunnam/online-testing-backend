@@ -354,6 +354,17 @@ public class ExamServiceImpl implements IExamService {
 			examRepo.updateExamStatus(exam, Constants.ACTIVE);
 			exam.setStatus(Constants.ACTIVE);
 		}
+
+		if (LocalDateTime.now().isAfter(LocalDateTime.parse(exam.getEndTime(), Constants.FORMATTER))) {
+			if (Boolean.TRUE.equals(exam.getIsResultsPublished())) {
+				examRepo.updateExamStatus(exam, Constants.GRADED);
+				exam.setStatus(Constants.GRADED);
+			} else {
+				examRepo.updateExamStatus(exam, Constants.COMPLETED);
+				exam.setStatus(Constants.COMPLETED);
+			}
+			
+		}
 	}
 
 	private void retrieveExamQuestions(ExamVO exam) throws GlobalException {
