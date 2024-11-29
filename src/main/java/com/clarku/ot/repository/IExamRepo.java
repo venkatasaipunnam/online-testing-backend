@@ -88,4 +88,8 @@ public interface IExamRepo {
 
 	Boolean unAssignUserToExam(List<String> unAssignUsers, Integer examId, UserVO user) throws GlobalException;
 
+	List<Integer> retrieveUserAssignedExams(String emailId) throws GlobalException;
+
+	List<Integer> retrieveUserAttemptedExams(Integer userId) throws GlobalException;
+
 }

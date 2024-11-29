@@ -17,6 +17,7 @@ import com.clarku.ot.vo.AssignExamVO;
 import com.clarku.ot.vo.CreateExamVO;
 import com.clarku.ot.vo.CreateOptionVO;
 import com.clarku.ot.vo.CreateQuestionVO;
+import com.clarku.ot.vo.ExamMetaDataVO;
 import com.clarku.ot.vo.ExamSessionVO;
 import com.clarku.ot.vo.ExamVO;
 import com.clarku.ot.vo.OptionVO;
@@ -510,6 +511,18 @@ public class ExamServiceImpl implements IExamService {
 	@Override
 	public Boolean endUserExam(UserVO user, Integer examId, ExamSessionVO examSession) throws GlobalException {
 		return examRepo.endUserExam(user.getUserId(), examId, examSession.getExamSessionId());
+	}
+
+	@Override
+	public ExamMetaDataVO getUsersExamMetaData(UserVO user) throws GlobalException {
+		ExamMetaDataVO metaData = new ExamMetaDataVO();
+		List<Integer> examIds = examRepo.retrieveUserAssignedExams(user.getEmailId());
+		List<Integer> attemptedExams = examRepo.retrieveUserAttemptedExams(user.getUserId());
+		
+		metaData.setExamsAssigned(examIds.size());
+		metaData.setExamsAttempted(attemptedExams.size());
+		
+		return metaData;
 	}
 
 }

@@ -7,6 +7,7 @@ import com.clarku.ot.vo.AssignExamVO;
 import com.clarku.ot.vo.CreateExamVO;
 import com.clarku.ot.vo.CreateOptionVO;
 import com.clarku.ot.vo.CreateQuestionVO;
+import com.clarku.ot.vo.ExamMetaDataVO;
 import com.clarku.ot.vo.ExamSessionVO;
 import com.clarku.ot.vo.ExamVO;
 import com.clarku.ot.vo.OptionVO;
@@ -58,5 +59,7 @@ public interface IExamService {
 	UserExamResponseVO saveUserExamResponse(UserExamResponseVO examResponse, UserVO user, ExamSessionVO examSession) throws GlobalException;
 
 	Boolean endUserExam(UserVO user, Integer examId, ExamSessionVO examSession) throws GlobalException;
+
+	ExamMetaDataVO getUsersExamMetaData(UserVO user) throws GlobalException;
 
 }

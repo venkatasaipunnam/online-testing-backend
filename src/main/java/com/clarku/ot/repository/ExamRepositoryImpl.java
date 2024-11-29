@@ -699,4 +699,36 @@ public class ExamRepositoryImpl implements IExamRepo{
 		}
 	}
 
+	@Override
+	public List<Integer> retrieveUserAssignedExams(String emailId) throws GlobalException {
+		List<Integer> allUserExams = new ArrayList<>();
+		MapSqlParameterSource parameters = new MapSqlParameterSource();
+		parameters.addValue("emailId", emailId);
+		try {
+			allUserExams = namedParameterJdbcTemplate.queryForList(SqlProperties.exam.get("getAssignedExams"), parameters, Integer.class);
+		} catch (DataAccessException exp) {
+			log.error("ExamRepositoryImpl :: retrieveUserExamResponses(): data access exception {}", exp.getMessage());
+		} catch (Exception exp) {
+			log.error("ExamRepositoryImpl :: retrieveUserExamResponses(): exception {}", exp.getMessage());
+			throw new GlobalException(Constants.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		return allUserExams;
+	}
+
+	@Override
+	public List<Integer> retrieveUserAttemptedExams(Integer userId) throws GlobalException {
+		List<Integer> allUserExams = new ArrayList<>();
+		MapSqlParameterSource parameters = new MapSqlParameterSource();
+		parameters.addValue("userId", userId);
+		try {
+			allUserExams = namedParameterJdbcTemplate.queryForList(SqlProperties.exam.get("getAttemptedExams"), parameters, Integer.class);
+		} catch (DataAccessException exp) {
+			log.error("ExamRepositoryImpl :: retrieveUserExamResponses(): data access exception {}", exp.getMessage());
+		} catch (Exception exp) {
+			log.error("ExamRepositoryImpl :: retrieveUserExamResponses(): exception {}", exp.getMessage());
+			throw new GlobalException(Constants.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		return allUserExams;
+	}
+
 }

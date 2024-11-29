@@ -34,6 +34,7 @@ import com.clarku.ot.vo.CreateOptionVO.CreateQuestionOptionValidation;
 import com.clarku.ot.vo.CreateQuestionVO;
 import com.clarku.ot.vo.CreateQuestionVO.CreateExamQuestionValidation;
 import com.clarku.ot.vo.ErrorVO;
+import com.clarku.ot.vo.ExamMetaDataVO;
 import com.clarku.ot.vo.ExamSessionVO;
 import com.clarku.ot.vo.ExamVO;
 import com.clarku.ot.vo.QuestionVO;
@@ -92,6 +93,24 @@ public class ExamController {
 			notify.sendSuccessExamCreationEmail(user, examVo.getTitle());
 		}
 		return new ResponseEntity<>(isExamCreated, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Create Exam API", description = "This API is mainly for the post login and passes the sessionid through headers. It creates the Exam for the user.")
+	@ApiResponses(value = {
+	    @ApiResponse(responseCode = "200", description = "Successfully Created", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Boolean.class))), 
+	    @ApiResponse(responseCode = "400", description = "Bad request. Please check all the required fields are entered or not", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorVO.class))),
+	    @ApiResponse(responseCode = "401", description = "Authorization information is missing or invalid.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorVO.class))),
+	    @ApiResponse(responseCode = "404", description = "A user with the specified ID was not found.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorVO.class))),
+	    @ApiResponse(responseCode = "500", description = "Unexpected error.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorVO.class)))
+	})
+	@PostMapping("metadata")
+	public ResponseEntity<ExamMetaDataVO> getStudentExamMetaData(@RequestHeader HttpHeaders headers) throws GlobalException {
+		SessionVO sessionDetails = authService.retrieveSession(headers);
+		UserVO user = userService.getUser(sessionDetails.getUserId());
+		System.out.println("Meta Data");
+		ExamMetaDataVO examsData = examService.getUsersExamMetaData(user);
+		
+		return new ResponseEntity<>(examsData, HttpStatus.OK);
 	}
 
 	@Operation(summary = "Update Exam API", description = "This API is mainly for the post login and passes the sessionid through headers. It updates the Exam for the instructor.")
