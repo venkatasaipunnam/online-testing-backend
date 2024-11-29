@@ -29,5 +29,7 @@ public class StudentResponseVO {
 
 	private Integer correctOption;
 
+	private List<Integer> correctOptions;
+
 	private ResponseFeedbackVO feedback;
 }

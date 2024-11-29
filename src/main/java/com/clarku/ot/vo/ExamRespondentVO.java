@@ -1,5 +1,6 @@
 package com.clarku.ot.vo;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 import lombok.Data;
@@ -20,5 +21,9 @@ public class ExamRespondentVO {
 	private String userType;
 
 	private Boolean isGraded;
+
+	private LocalDateTime examStartedTime;
+
+	private LocalDateTime examEndTime;
 
 }

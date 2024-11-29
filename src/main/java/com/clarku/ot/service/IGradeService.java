@@ -10,6 +10,6 @@ public interface IGradeService {
 
 	ExamGradeVO getExamGrades(ExamVO examDetails, UserVO user) throws GlobalException;
 
-	StudentResultVO getStudentGrades(ExamVO examDetails, UserVO user) throws GlobalException;
+	ExamGradeVO getStudentGrades(ExamVO examDetails, UserVO user) throws GlobalException;
 
 }

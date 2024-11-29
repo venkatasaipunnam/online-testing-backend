@@ -175,7 +175,8 @@ public class ExamResponseController {
 		if (Constants.STUDENT.equalsIgnoreCase(user.getUserType())) {
 			throw new GlobalException("Access not granted", HttpStatus.FORBIDDEN);
 		}
-		Boolean isPublished = responseService.publishResults(examId);
+		ExamVO examDetails = examService.retrieveExam(examId, user);
+		Boolean isPublished = responseService.publishResults(examDetails);
 		return new ResponseEntity<>(isPublished, HttpStatus.OK);
 	}
 }

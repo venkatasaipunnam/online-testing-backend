@@ -18,7 +18,7 @@ public interface IExamResponseService {
 
 	ResponseFeedbackVO createExamFeedback(ResponseFeedbackVO feedback, UserVO user) throws GlobalException;
 
-	Boolean publishResults(Integer examId) throws GlobalException;
+	Boolean publishResults(ExamVO examDetails) throws GlobalException;
 
 	Integer getExamIdByExamSession(UUID examSession) throws GlobalException;
 

@@ -33,7 +33,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 @RestController
-@RequestMapping("exam/grade/")
+@RequestMapping("exam/grade")
 public class GradesController {
 
 	@Autowired
@@ -84,12 +84,12 @@ public class GradesController {
 	    @ApiResponse(responseCode = "404", description = "A user with the specified ID was not found.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorVO.class))),
 	    @ApiResponse(responseCode = "500", description = "Unexpected error.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorVO.class)))
 	})
-	@GetMapping("student")
-	public ResponseEntity<StudentResultVO> retrieveStudentGrades(@RequestHeader HttpHeaders headers, @RequestParam(name = "examId") Integer examId) throws GlobalException {
+	@GetMapping("/student")
+	public ResponseEntity<ExamGradeVO> retrieveStudentGrades(@RequestHeader HttpHeaders headers, @RequestParam(name = "examId") Integer examId) throws GlobalException {
 		SessionVO sessionDetails = authService.retrieveSession(headers);
 		UserVO user = userService.getUser(sessionDetails.getUserId());
 		ExamVO examDetails = examService.retrieveExam(examId, user);
-		StudentResultVO responses = gradeService.getStudentGrades(examDetails, user);
+		ExamGradeVO responses = gradeService.getStudentGrades(examDetails, user);
 		return new ResponseEntity<>(responses, HttpStatus.OK);
 	}
 
