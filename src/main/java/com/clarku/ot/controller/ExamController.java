@@ -103,11 +103,10 @@ public class ExamController {
 	    @ApiResponse(responseCode = "404", description = "A user with the specified ID was not found.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorVO.class))),
 	    @ApiResponse(responseCode = "500", description = "Unexpected error.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorVO.class)))
 	})
-	@PostMapping("metadata")
+	@GetMapping("metadata")
 	public ResponseEntity<ExamMetaDataVO> getStudentExamMetaData(@RequestHeader HttpHeaders headers) throws GlobalException {
 		SessionVO sessionDetails = authService.retrieveSession(headers);
 		UserVO user = userService.getUser(sessionDetails.getUserId());
-		System.out.println("Meta Data");
 		ExamMetaDataVO examsData = examService.getUsersExamMetaData(user);
 		
 		return new ResponseEntity<>(examsData, HttpStatus.OK);
