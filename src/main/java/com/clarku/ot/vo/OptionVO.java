@@ -5,6 +5,8 @@ import lombok.Data;
 @Data
 public class OptionVO {
 	
+	private Integer questionId;
+	
 	private Integer optionId;
 	
 	private String optionText;
@@ -15,9 +17,11 @@ public class OptionVO {
 	
 	private String optionType;
 	
-	private String createdBy;
+	private Integer createdUserId;
 	
-	private String lastUpdatedBy;
+	private String createdUser;
+	
+	private String lastUpdatedUser;
 	
 	private String lastUpdatedOn;
 

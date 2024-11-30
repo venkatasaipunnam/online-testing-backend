@@ -7,7 +7,6 @@ import lombok.Data;
 @Data
 public class CreateOptionVO {
 
-	@Schema(hidden = true)
 	@NotNull(message = "Please provide ExamId", groups = { CreateQuestionOptionValidation.class })
 	private Integer questionId;
 	

@@ -3,6 +3,8 @@
  */
 package com.clarku.ot.utils;
 
+import java.time.format.DateTimeFormatter;
+
 /**
  * 
  */
@@ -10,6 +12,9 @@ public class Constants {
 
 	private Constants() {
 	}
+	
+	// Define the date and time pattern
+    public static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
 	public static final String STUDENT = "Student";
 
@@ -69,6 +74,8 @@ public class Constants {
 
 	public static final String COMPLETED = "COMPLETED";
 
+	public static final String COMPLETED_SMALL = "Completed";
+
 	public static final String CREATED = "CREATED";
 
 	public static final String ACTIVE = "ACTIVE";
@@ -76,5 +83,65 @@ public class Constants {
 	public static final String INACTIVE = "INACTIVE";
 
 	public static final String CLOSED = "CLOSED";
+
+	public static final String HOLD = "HOLD";
 	
+	public static final String POSTED = "POSTED";
+
+	public static final String CANCELED = "CANCELED";
+
+	public static final String INPROGRESS = "INPROGRESS";
+
+	public static final String INPROGRESS_SMALL = "InProgress";
+
+	public static final String MCQ = "MCQ";
+	
+	public static final String MSQ = "MSQ";
+
+	public static final String BLANK = "BLANK";
+	
+	public static final String TRUE_FALSE = "TF";
+
+	public static final String SHORT = "SHORT";
+	
+	public static final String ESSAY = "ESSAY";
+	
+	public static final String CHOOSE = "CHOOSE";
+
+	public static final Object HEADER_EXAM_SESSION_ID = "examsessionid";
+
+	public static final String UN_ATTEMPTED = "UnAttempted";
+	
+	public static final String NOTIFY_EXAM_CREATION_SUB = "New Exam Created : ";
+
+	public static final String NOTIFY_EXAM_CREATION_TEMPLATE = "examCreationSuccess";
+	
+	public static final String NOTIFY_EXAM_UPDATE_SUB = "Update on your Exam : ";
+
+	public static final String NOTIFY_EXAM_UPDATE_TEMPLATE = "examUpdateSuccess";
+
+	public static final String NOTIFY_EXAM_ASSIGNED_SUB = "New Exam Assigned : ";
+
+	public static final String NOTIFY_EXAM_ASSIGNED_TEMPLATE = "examAssigning";
+
+	public static final String NOTIFY_EXAM_UNASSIGNED_SUB = "Exam UnAssigned : ";
+
+	public static final String NOTIFY_EXAM_UNASSIGNED_TEMPLATE = "examUnAssigned";
+
+	public static final String NOTIFY_EXAM_PRIOR_DAY_SUB = "Reminder: Your Exam is Tomorrow - ";
+
+	public static final String NOTIFY_EXAM_PRIOR_DAY_TEMPLATE = "notifyStudentAboutExam";
+
+	public static final String NOTIFY_EXAM_COMPLETION_SUB = "Exam Completed Successfully : ";
+
+	public static final String NOTIFY_EXAM_COMPLETION_TEMPLATE = "examCompletion";
+
+	public static final String NOTIFY_EXAM_GRADED_SUB = "Your Results are Ready for Exam : ";
+
+	public static final String NOTIFY_EXAM_GRADED_TEMPLATE = "examGraded";
+
+	public static final String GRADED = "GRADED";
+
+	public static final String GRADES_INPROGRESS = "GRADES INPROGRESS";
+
 }

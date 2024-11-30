@@ -24,7 +24,7 @@ public class UpdateQuestionVO {
 	@NotNull(message = "Please provide question type", groups = { UpdateQuestionValidation.class })
 	private String questionType;
 	
-	@NotEmpty(message = "Please provide question Points", groups = { UpdateQuestionValidation.class })
+	@NotNull(message = "Please provide question Points", groups = { UpdateQuestionValidation.class })
 	private Double points;
 	
 	private List<UpdateOptionVO> options;

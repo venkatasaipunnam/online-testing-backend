@@ -22,6 +22,8 @@ public class SqlProperties {
 	public static Map<String, String> session;
 	public static Map<String, String> admin;
 	public static Map<String, String> exam;
+	public static Map<String, String> response;
+	public static Map<String, String> grade;
 
 	public void setUser(Map<String, String> user) {
 		SqlProperties.user = user;
@@ -41,6 +43,14 @@ public class SqlProperties {
 
 	public void setExam(Map<String, String> exam) {
 		SqlProperties.exam = exam;
+	}
+
+	public void setResponse(Map<String, String> response) {
+		SqlProperties.response = response;
+	}
+
+	public void setGrade(Map<String, String> grade) {
+		SqlProperties.grade = grade;
 	}
 	
 }

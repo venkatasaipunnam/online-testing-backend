@@ -26,7 +26,7 @@ public class UpdateExamVO {
 	@NotNull(message = "Please provide Exam Duration", groups = { UpdateExamValidation.class })
 	private Integer duration;
 
-	@NotEmpty(message = "Please provide Exam Total Points", groups = { UpdateExamValidation.class })
+	@NotNull(message = "Please provide Exam Total Points", groups = { UpdateExamValidation.class })
 	private Double totalPoints;
 
 	private Boolean autoGrade;

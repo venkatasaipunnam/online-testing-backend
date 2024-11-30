@@ -1,15 +1,21 @@
 package com.clarku.ot.vo;
 
+import java.util.List;
+
 import lombok.Data;
 
 @Data
 public class StudentResponseVO {
+	
+	private Integer responseId;
 
 	private Integer studentId;
 	
 	private Integer questionId;
 	
 	private Integer choosenOption;
+	
+	private List<Integer> choosenOptions;
 	
 	private String answerText;
 	
@@ -20,8 +26,10 @@ public class StudentResponseVO {
 	private Double pointsGained;
 	
 	private Boolean isCorrect;
-	
+
 	private Integer correctOption;
-	
-	private ResponseFeedbackVO feedbacks;
+
+	private List<Integer> correctOptions;
+
+	private ResponseFeedbackVO feedback;
 }

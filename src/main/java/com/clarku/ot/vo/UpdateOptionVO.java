@@ -5,6 +5,8 @@ import lombok.Data;
 
 @Data
 public class UpdateOptionVO {
+	
+	private Integer questionId;
 
 	@NotNull(message = "Please provide Option Id", groups = { UpdateOptionValidation.class })
 	private Integer optionId;

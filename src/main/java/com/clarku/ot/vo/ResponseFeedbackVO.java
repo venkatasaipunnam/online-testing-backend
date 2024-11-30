@@ -4,6 +4,10 @@ import lombok.Data;
 
 @Data
 public class ResponseFeedbackVO {
+	
+	private Integer responseId;
+
+	private Integer feedbackId;
 
 	private Integer feedbackerId;
 	
@@ -12,4 +16,8 @@ public class ResponseFeedbackVO {
 	private String feedback;
 	
 	private String feedbackPostedTime;
+	
+	private Boolean isCorrect;
+	
+	private Double gainedPoints;
 }

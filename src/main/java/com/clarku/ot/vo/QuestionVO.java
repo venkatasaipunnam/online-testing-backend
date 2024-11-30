@@ -19,11 +19,13 @@ public class QuestionVO {
 	
 	private String questionImagePath;
 	
-	private String createdBy;
+	private String createdUser;
 	
 	private String createdOn;
 	
-	private String lastUpdatedBy;
+	private String lastUpdatedUser;
+	
+	private Integer createdUserId;
 	
 	private String lastUpdatedOn;
 	
