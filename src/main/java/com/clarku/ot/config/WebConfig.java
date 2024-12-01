@@ -8,7 +8,7 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                .allowedOrigins("*")
+                .allowedOrigins("https://online-testing-ui.vercel.app/", "https://release-1.d2cwvchoi4io6t.amplifyapp.com", "http://release-1.d2cwvchoi4io6t.amplifyapp.com")
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS");
     }
 }
