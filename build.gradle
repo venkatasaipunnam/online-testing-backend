@@ -43,6 +43,6 @@ tasks.named('test') {
 
 tasks {
     bootJar {
-        archiveFileName.set("online-testing.jar")
+        archiveFileName.set("online-testing-http.jar")
     }
 }

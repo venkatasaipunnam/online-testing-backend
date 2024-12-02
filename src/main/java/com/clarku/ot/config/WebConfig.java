@@ -27,6 +27,7 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addMapping("/**")
                 .allowedOrigins("https://online-testing-ui.vercel.app", 
                                 "https://release-1.d2cwvchoi4io6t.amplifyapp.com", 
+                                "http://ec2-34-229-89-207.compute-1.amazonaws.com",
                                 "http://localhost:3000")
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowCredentials(true);
