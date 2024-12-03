@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
@@ -248,15 +249,20 @@ public class ExamResponseServiceImpl implements IExamResponseService {
 			throw new GlobalException("Update Failed, Feedback Not Found", HttpStatus.NOT_FOUND);
 		}
 		Boolean isChangesPresent = Boolean.FALSE;
-		if (!existingFeedback.getFeedback().equalsIgnoreCase(feedback.getFeedback())) {
-			isChangesPresent = Boolean.TRUE;
-		}
-		if (!existingFeedback.getGainedPoints().equals(feedback.getGainedPoints())) {
-			isChangesPresent = Boolean.TRUE;
-		}
-		if (!existingFeedback.getIsCorrect().equals(feedback.getIsCorrect())) {
-			isChangesPresent = Boolean.TRUE;
-		}
+//		if (!existingFeedback.getFeedback().equalsIgnoreCase(feedback.getFeedback())) {
+//			isChangesPresent = Boolean.TRUE;
+//		}
+//		if (!existingFeedback.getGainedPoints().equals(feedback.getGainedPoints())) {
+//			isChangesPresent = Boolean.TRUE;
+//		}
+//		if (!existingFeedback.getIsCorrect().equals(feedback.getIsCorrect())) {
+//			isChangesPresent = Boolean.TRUE;
+//		}
+		if (!Objects.equals(existingFeedback.getFeedback(), feedback.getFeedback()) ||
+			    !Objects.equals(existingFeedback.getGainedPoints(), feedback.getGainedPoints()) ||
+			    !Objects.equals(existingFeedback.getIsCorrect(), feedback.getIsCorrect())) {
+			    isChangesPresent = true;
+			}
 		if (isChangesPresent.equals(Boolean.FALSE)) {
 			throw new GlobalException("No Fields to Update", HttpStatus.BAD_REQUEST);
 		}
