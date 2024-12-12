@@ -1,0 +1,23 @@
+package com.clarku.ot.vo;
+
+import lombok.Data;
+
+@Data
+public class ResponseFeedbackVO {
+	
+	private Integer responseId;
+
+	private Integer feedbackId;
+
+	private Integer feedbackerId;
+	
+	private String feedbackerName;
+	
+	private String feedback;
+	
+	private String feedbackPostedTime;
+	
+	private Boolean isCorrect;
+	
+	private Double gainedPoints;
+}
